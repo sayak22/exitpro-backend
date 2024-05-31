@@ -1,18 +1,22 @@
 const express=require('express')
-const app=express(); 
-const bodyParser=require('body-parser')
-app.use(bodyParser.json)
 require('dotenv').config()
-// const db=require('./db.js')
+const app=express(); 
+const db=require('./db.js')
+const bodyParser=require('body-parser')
+app.use(bodyParser.json())
 
-app.get('/',(req,res)=>{
-    console.log('Welcome to ExitPro!')
+app.get("/",(req,res)=>{
+    res.send('Welcome to ExitPro!')
 })
 
 
 //Now I have to implement the routes
-const securityRoute=require('./routers/securityRoute')
-app.get('/security',securityRoute);
+const studentRoute=require("./routers/studentRoute")
+app.use("/student",studentRoute);
+const guardRoute=require("./routers/guardRoute")
+app.use("/guard",guardRoute);
+// const securityRoute=require("./routers/securityRoute")
+// app.use('/security',securityRoute);
 
 
 const PORT=process.env.PORT || 3000
