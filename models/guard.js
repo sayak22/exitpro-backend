@@ -22,6 +22,7 @@ const guardSchema = new mongoose.Schema({
     },
     otp:{
         type:String,
+        default:null    
     }
 })
 

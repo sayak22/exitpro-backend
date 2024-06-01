@@ -15,8 +15,8 @@ const studentRoute=require("./routers/studentRoute")
 app.use("/student",studentRoute);
 const guardRoute=require("./routers/guardRoute")
 app.use("/guard",guardRoute);
-// const securityRoute=require("./routers/securityRoute")
-// app.use('/security',securityRoute);
+const securityRoute=require("./routers/securityRoute")
+app.use('/security',securityRoute);
 
 
 const PORT=process.env.PORT || 3000
