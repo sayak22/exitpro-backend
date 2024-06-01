@@ -8,6 +8,7 @@ function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit OTP
 }
 
+// ROUTER TO HANDLE SENDING OF OTP
 router.put("/login/:guardID", async (req, res) => {
   try {
     const guard = await Guard.findOne({ guardId: req.params.guardID });
@@ -58,9 +59,24 @@ router.put("/login/:guardID", async (req, res) => {
     };
 
     const updatedGuard = await sendMail(transporter, mailOptions); // calling sendMail function
-    res
-      .status(200)
-      .json({ Success: `Message sent to ${guard.guardName}`});
+    res.status(200).json({ Success: `Message sent to ${guard.guardName}` });
+  } catch (err) {
+    console.log(`error: ${err}`);
+    res.status(500).json({ Error: err.message });
+  }
+});
+
+//ROUTER TO HANDLE VERIFICATION OF OTP
+router.get("/otpMatch/:otp", async (req, res) => {
+  try {
+    const guard = await Guard.findOne({ otp: req.params.otp });
+    if (!guard) {
+      //if guard is null that means otp that is sent to us does not match with any guard. Therefore wrong OTP
+      console.log("OTP does not match with any Guard OTP");
+      return res.status(200).json({ isSuccess: false });
+    }
+    console.log("OTP verified successfully");
+    res.status(200).json({ isSuccess: true, guardName: guard.guardName });
   } catch (err) {
     console.log(`error: ${err}`);
     res.status(500).json({ Error: err.message });
