@@ -33,7 +33,6 @@ const logSchema = new mongoose.Schema({
     },
     inTime:{
         type:String,
-        required:true
     }
 })
 
