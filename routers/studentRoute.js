@@ -1,5 +1,5 @@
 const express = require("express");
-const Student = require("../models/Student");
+const Student = require("../models/student");
 const getStudentByRollNumber = require("../Utils/getStudentByRollNumber");
 const updateLogBook = require("../Utils/updateLogBook");
 const LogEntry = require("../models/logEntry");
@@ -162,10 +162,6 @@ router.put("/entry/:rollNumber", async (req, res) => {
         .status(200)
         .json({ Message: "Log Entry not found / Student already in campus" });
     }
-    // if (logEntry.inTime != null) {
-    //   console.log("Student already in campus");
-    //   return res.status(200).json({ Message: "Student already in campus" });
-    // }
     const currentDate = new Date();
     const time = currentDate.toLocaleString();
     const logEntryToUpdate = await LogEntry.findOneAndUpdate(
@@ -187,7 +183,7 @@ module.exports = router;
 
 /*
 :::::::::::::::::::::::::::::::
-OUT OF CAMPUS STUDENTS ENDPOINT(NOT WORKING)
+OUT OF CAMPUS STUDENTS ENDPOINT
 :::::::::::::::::::::::::::::::
 */
 
