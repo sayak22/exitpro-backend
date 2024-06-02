@@ -1,4 +1,4 @@
-const LogEntry = require("../models/LogEntry");
+const LogEntry = require("../models/logEntry");
 
 const updateLogBook = async (stu, goingTo) => {
   try {

@@ -2,7 +2,7 @@ const express = require("express");
 const Student = require("../models/Student");
 const getStudentByRollNumber = require("../Utils/getStudentByRollNumber");
 const updateLogBook = require("../Utils/updateLogBook");
-const LogEntry = require("../models/LogEntry");
+const LogEntry = require("../models/logEntry");
 const router = express.Router();
 
 /*
@@ -121,7 +121,9 @@ router.post("/exit", async (req, res) => {
     });
     if (logEntry && !logEntry.inTime) {
       console.log("Active log found / Student already out of campus");
-      return res.status(200).json({ Message: "Active log found / Student Already out of campus" });
+      return res
+        .status(200)
+        .json({ Message: "Active log found / Student Already out of campus" });
     }
 
     const newLogEntry = await updateLogBook(stu, goingTo);
@@ -142,9 +144,9 @@ router.post("/exit", async (req, res) => {
 });
 
 /*
-:::::::::::::
+::::::::::::::
 ENTRY ENDPOINT
-:::::::::::::
+::::::::::::::
 */
 router.put("/entry/:rollNumber", async (req, res) => {
   try {
@@ -156,7 +158,9 @@ router.put("/entry/:rollNumber", async (req, res) => {
     console.log(logEntry);
     if (!logEntry) {
       console.log("Log Entry not found / Student already in campus");
-      return res.status(200).json({ Message: "Log Entry not found / Student already in campus" });
+      return res
+        .status(200)
+        .json({ Message: "Log Entry not found / Student already in campus" });
     }
     // if (logEntry.inTime != null) {
     //   console.log("Student already in campus");
@@ -180,3 +184,31 @@ router.put("/entry/:rollNumber", async (req, res) => {
 });
 
 module.exports = router;
+
+/*
+:::::::::::::::::::::::::::::::
+OUT OF CAMPUS STUDENTS ENDPOINT(NOT WORKING)
+:::::::::::::::::::::::::::::::
+*/
+
+router.get("/out/late", async (req, res) => {
+  /*
+  The end point is "/out/late" insted of "/late" because 
+  It is conflicting with another get endpoint of roll number based fetching
+  Another get router with "/:rollNumber" is conflicting with "/late" and taking 
+  late as roll number, therefore casting error of "late" is displayed.
+  */
+  try {
+      const openEntries = await LogEntry.find({ inTime: null });
+      if (!openEntries || openEntries.length == 0) {
+        console.log("No open entries found");
+        return res.status(200).json({});
+      }
+      console.log(`${openEntries.length} open entries sent`)
+      return res.status(200).json(openEntries);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ Error: "Internal server error", Details: err.message });
+  }
+});
