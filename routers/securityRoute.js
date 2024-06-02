@@ -36,7 +36,7 @@ router.put("/login/:guardID", async (req, res) => {
       from: { name: "ExitPro Admin", address: process.env.EMAIL_USER },
       to: guardEmail,
       subject: "Your 6 digit OTP Code for EXITPRO",
-      text: `Dear ${guard.guardName},\nYour OTP code is - ${otp}. Do not share this OTP with anyone.\n\nThanks & Regards,\Admin(ExitPro).`,
+      text: `Dear ${guard.guardName},\n\nYour OTP code is - ${otp}. Do not share this OTP with anyone.\n\nThanks & Regards,\nAdmin(ExitPro).`,
     };
 
     // Function to actually send the mail and handle the success response
