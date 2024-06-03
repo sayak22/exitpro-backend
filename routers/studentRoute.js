@@ -1,5 +1,6 @@
-const express = require("express");
-const Student = require("../models/student");
+const express = require("express")
+const { format } = require("date-fns")
+const Student = require("../models/student")
 const getStudentByRollNumber = require("../Utils/getStudentByRollNumber");
 const updateLogBook = require("../Utils/updateLogBook");
 const LogEntry = require("../models/logEntry");
@@ -104,7 +105,7 @@ router.delete("/:id", async (req, res) => {
 EXIT ENDPOINT
 ::::::::::::::
 */
-router.post("/exit", async (req, res) => {
+router.post("/gate/exit", async (req, res) => {
   try {
     const roll = req.body.roll_number;
     const goingTo = req.body.goingTo;
@@ -112,7 +113,7 @@ router.post("/exit", async (req, res) => {
 
     if (!stu) {
       console.log("Roll Number not found");
-      return res.status(200).json({ Message: "Roll Number not found" });
+      return res.status(404).json({ Message: "Roll Number not found" });
     }
 
     const logEntry = await LogEntry.findOne({
@@ -121,13 +122,11 @@ router.post("/exit", async (req, res) => {
     });
     if (logEntry && !logEntry.inTime) {
       console.log("Active log found / Student already out of campus");
-      return res
-        .status(200)
-        .json({ Message: "Active log found / Student Already out of campus" });
+      return res.status(200).json({ isSuccess: false });
     }
 
     const newLogEntry = await updateLogBook(stu, goingTo);
-    res.status(200).json(newLogEntry);
+    res.status(200).json({ isSuccess: true });
   } catch (error) {
     if (error.message.includes("No data of Roll Number")) {
       res.status(404).json({
@@ -148,30 +147,37 @@ router.post("/exit", async (req, res) => {
 ENTRY ENDPOINT
 ::::::::::::::
 */
-router.put("/entry/:rollNumber", async (req, res) => {
+router.put("/gate/entry/:rollNumber", async (req, res) => {
   try {
     const roll = req.params.rollNumber;
     const logEntry = await LogEntry.findOne({
       roll_number: roll,
       inTime: null,
     });
+
     console.log(logEntry);
+
     if (!logEntry) {
       console.log("Log Entry not found / Student already in campus");
-      return res
-        .status(200)
-        .json({ Message: "Log Entry not found / Student already in campus" });
+      return res.status(200).json({ isSuccess: false });
     }
+
     const currentDate = new Date();
-    const time = currentDate.toLocaleString();
+    const formattedTime = format(currentDate, "MMM dd yyyy HH:mm:ss");
+
     const logEntryToUpdate = await LogEntry.findOneAndUpdate(
       { roll_number: roll, inTime: null },
-      { $set: { inTime: time } },
+      { $set: { inTime: formattedTime } },
       { new: true }
     );
 
+    if (!logEntryToUpdate) {
+      console.log("Failed to update log entry");
+      return res.status(500).json({ isSuccess: false });
+    }
+
     console.log("Log Entry Updated");
-    return res.status(200).json({ Message: "Log Entry updated" });
+    return res.status(200).json({ isSuccess: true });
   } catch (err) {
     res
       .status(500)
@@ -195,13 +201,13 @@ router.get("/out/late", async (req, res) => {
   late as roll number, therefore casting error of "late" is displayed.
   */
   try {
-      const openEntries = await LogEntry.find({ inTime: null });
-      if (!openEntries || openEntries.length == 0) {
-        console.log("No open entries found");
-        return res.status(200).json({});
-      }
-      console.log(`${openEntries.length} open entries sent`)
-      return res.status(200).json(openEntries);
+    const openEntries = await LogEntry.find({ inTime: null });
+    if (!openEntries || openEntries.length == 0) {
+      console.log("No open entries found");
+      return res.status(200).json({});
+    }
+    console.log(`${openEntries.length} open entries sent`);
+    return res.status(200).json(openEntries);
   } catch (err) {
     res
       .status(500)

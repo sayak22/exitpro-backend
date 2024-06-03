@@ -9,9 +9,9 @@ function generateOtp() {
 }
 
 // ROUTER TO HANDLE SENDING OF OTP
-router.put("/login/:guardID", async (req, res) => {
+router.put("/login", async (req, res) => {
   try {
-    const guard = await Guard.findOne({ guardId: req.params.guardID });
+    const guard = await Guard.findOne({ guardId: req.body.guardId });
 
     if (!guard) {
       return res.status(404).json({ Error: "Guard not found" });
@@ -39,44 +39,46 @@ router.put("/login/:guardID", async (req, res) => {
       text: `Dear ${guard.guardName},\n\nYour OTP code is - ${otp}. Do not share this OTP with anyone.\n\nThanks & Regards,\nAdmin(ExitPro).`,
     };
 
-    // Function to actually send the mail and handle the success response
-    const sendMail = async (transporter, mailOptions) => {
+    try {
+      // Send the OTP email
       await transporter.sendMail(mailOptions);
 
       // Updating the guard OTP in the Guard database.
       const updatedGuard = await Guard.findOneAndUpdate(
-        { guardId: req.params.guardID },
+        { guardId: req.body.guardId },
         { otp: otp },
         { new: true }
       );
 
       if (!updatedGuard) {
-        throw new Error("Failed to update the guard OTP in the database");
+        console.log("Failed to update OTP in database");
+        return res.status(200).json({ isSuccess: false });
       }
 
       console.log(`OTP sent successfully to ${guardEmail}`);
-      return updatedGuard;
-    };
-
-    const updatedGuard = await sendMail(transporter, mailOptions); // calling sendMail function
-    res.status(200).json({ Success: `Message sent to ${guard.guardName}` });
+      return res.status(200).json({ isSuccess: true });
+    } catch (error) {
+      console.log("Error sending OTP email:", error);
+      return res.status(500).json({ Error: "Error sending OTP email", Details: error.message });
+    }
   } catch (err) {
-    console.log(`error: ${err}`);
+    console.log(`Error: ${err}`);
     res.status(500).json({ Error: err.message });
   }
 });
 
 //ROUTER TO HANDLE VERIFICATION OF OTP
-router.get("/otpMatch/:otp", async (req, res) => {
+router.post("/otpMatch", async (req, res) => {
   try {
-    const guard = await Guard.findOne({ otp: req.params.otp });
+    const guard = await Guard.findOne({ otp: req.body.otp });
     if (!guard) {
       //if guard is null that means otp that is sent to us does not match with any guard. Therefore wrong OTP
       console.log("OTP does not match with any Guard OTP");
       return res.status(200).json({ isSuccess: false });
     }
+    
     console.log("OTP verified successfully");
-    res.status(200).json({ isSuccess: true, guardName: guard.guardName });
+    res.status(200).json({ isSuccess: true });
   } catch (err) {
     console.log(`error: ${err}`);
     res.status(500).json({ Error: err.message });
