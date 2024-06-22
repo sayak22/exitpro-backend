@@ -59,7 +59,9 @@ router.put("/login", async (req, res) => {
       return res.status(200).json({ isSuccess: true });
     } catch (error) {
       console.log("Error sending OTP email:", error);
-      return res.status(500).json({ Error: "Error sending OTP email", Details: error.message });
+      return res
+        .status(500)
+        .json({ Error: "Error sending OTP email", Details: error.message });
     }
   } catch (err) {
     console.log(`Error: ${err}`);
@@ -76,9 +78,9 @@ router.post("/otpMatch", async (req, res) => {
       console.log("OTP does not match with any Guard OTP");
       return res.status(200).json({ isSuccess: false });
     }
-    
+
     console.log("OTP verified successfully");
-    res.status(200).json({ isSuccess: true });
+    res.status(200).json({ isSuccess: true, guardName: guard.guardName });
   } catch (err) {
     console.log(`error: ${err}`);
     res.status(500).json({ Error: err.message });
@@ -86,3 +88,4 @@ router.post("/otpMatch", async (req, res) => {
 });
 
 module.exports = router;
+
