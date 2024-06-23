@@ -22,6 +22,10 @@ const studentSchema = new mongoose.Schema({
     room_number:{
         type:Number,
         required:true
+    },
+    fine:{
+        type:Number,
+        required:true
     }
 })
 
